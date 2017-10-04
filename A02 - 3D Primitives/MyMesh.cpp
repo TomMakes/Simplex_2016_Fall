@@ -218,6 +218,7 @@ void MyMesh::GenerateCube(float a_fSize, vector3 a_v3Color)
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
 }
+
 void MyMesh::GenerateCuboid(vector3 a_v3Dimensions, vector3 a_v3Color)
 {
 	Release();
@@ -261,6 +262,7 @@ void MyMesh::GenerateCuboid(vector3 a_v3Dimensions, vector3 a_v3Color)
 }
 void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions, vector3 a_v3Color)
 {
+#pragma region SettingCode
 	if (a_fRadius < 0.01f)
 		a_fRadius = 0.01f;
 
@@ -274,9 +276,61 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 
 	Release();
 	Init();
-
+#pragma endregion
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+
+	//Make a previous point for determining where to place the next point.
+	vector3 previousPoint;
+
+	//Making an array of points
+	vector3* points = new vector3[a_nSubdivisions + 1];
+	points[0] = vector3(0, 0, a_fHeight);
+	points[1] = vector3(0, a_fRadius, 0);
+
+	//Set the previous point to point with origin
+	previousPoint = points[1];
+	for (int i = 0; i < a_nSubdivisions-1; i++)
+	{
+		double x = (cos(PI * 2 / a_nSubdivisions)*previousPoint.x) - sin(PI * 2 / a_nSubdivisions)* previousPoint.y;
+		double y = sin(PI * 2 / a_nSubdivisions)* previousPoint.x + (cos(PI * 2 / a_nSubdivisions)*previousPoint.y);
+		points[i + 2] = vector3(x, y, 0);
+		
+		previousPoint = points[i + 2];
+	}
+
+	//Make the sides
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		//C
+		//| \
+		//A--B
+		//This will make the triangle A->B->C 
+		if (i + 2 > a_nSubdivisions)
+		{
+			AddTri(points[i + 1], points[1], points[0]);
+		}
+		else
+		{
+			AddTri(points[i + 1], points[i + 2], points[0]);
+		}
+
+	}
+
+	//Making the Base
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		if (i + 2 > a_nSubdivisions)
+		{
+			AddTri(points[1], points[i + 1], vector3(0, 0, 0));
+		}
+		else
+		{
+			AddTri(points[i + 2], points[i + 1], vector3(0, 0, 0));
+		}
+	}
+	//Cleanup
+	delete[] points;
+	points = nullptr;
 	// -------------------------------
 
 	// Adding information about color
@@ -300,7 +354,83 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+
+	//Make a previous point for determining where to place the next point.
+	vector3 previousPoint;
+
+	//Making an array of points
+	vector3* points = new vector3[a_nSubdivisions *4 + 2];
+	points[0] = vector3(0, 0, 0);
+	points[1] = vector3(0, a_fRadius, 0);
+
+	points[0+a_nSubdivisions] = vector3(0, 0, a_fHeight);
+	points[1+a_nSubdivisions] = vector3(0, a_fRadius, a_fHeight);
+
+	//Set the previous point to point with origin
+	previousPoint = points[1];
+	//Making the Top outer points
+	for (int i = 0; i < a_nSubdivisions - 1; i++)
+	{
+		double x = (cos(PI * 2 / a_nSubdivisions)*previousPoint.x) - sin(PI * 2 / a_nSubdivisions)* previousPoint.y;
+		double y = sin(PI * 2 / a_nSubdivisions)* previousPoint.x + (cos(PI * 2 / a_nSubdivisions)*previousPoint.y);
+		points[i + 2] = vector3(x, y, 0);
+
+		previousPoint = points[i + 2];
+	}
+
+	//Change the previous point to go to bottom layer
+	previousPoint = points[a_nSubdivisions];
+
+	//Making the Bottom Outer Points
+	for (int i = a_nSubdivisions; i < a_nSubdivisions * 2 - 1; i++)
+	{
+		points[i+2] = points[i+2 - a_nSubdivisions];
+		points[i + 2].z = a_fHeight;
+	}
+
+	//Filling the Outer Bottom Base
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		if (i + 2 > a_nSubdivisions)
+		{
+			AddTri(points[1], points[i + 1], vector3(0, 0, 0));
+		}
+		else
+		{
+			AddTri(points[i + 2], points[i + 1], vector3(0, 0, 0));
+		}
+	}
+	//Filling the Outer Top Base
+	for (int i = a_nSubdivisions; i < a_nSubdivisions * 2; i++)
+	{
+		if (i + 2 > a_nSubdivisions*2)
+		{
+			AddTri(points[i + 1], points[1+a_nSubdivisions], vector3(0, 0, a_fHeight));
+		}
+		else
+		{
+			AddTri(points[i + 1], points[i + 2], vector3(0, 0, a_fHeight));
+		}
+	}
+
+	//Making the Sides
+	//C--D
+	//|  |
+	//A--B
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		if (i + 2 > a_nSubdivisions)
+		{
+			AddQuad(points[i + 1], points[1], points[i + 1 + a_nSubdivisions], points[1 + a_nSubdivisions]);
+		}
+		else
+			AddQuad(points[i + 1], points[i + 2], points[i + 1 + a_nSubdivisions], points[i + 2 + a_nSubdivisions]);
+	}
+
+	//Cleanup
+	delete[] points;
+	points = nullptr;
+
 	// -------------------------------
 
 	// Adding information about color
@@ -309,6 +439,7 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 }
 void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fHeight, int a_nSubdivisions, vector3 a_v3Color)
 {
+#pragma region SettingCode
 	if (a_fOuterRadius < 0.01f)
 		a_fOuterRadius = 0.01f;
 
@@ -328,10 +459,113 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 
 	Release();
 	Init();
-
+#pragma endregion
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+
+	//Make a previous point for determining where to place the next point.
+	vector3 previousPoint;
+
+	//Making an array of points
+	vector3* points = new vector3[a_nSubdivisions * 4];
+
+	//First set determins the Outer Bottom layer of Points
+	points[0] = vector3(0, a_fOuterRadius, 0);
+
+	//Second Set determines the Outer Top layer of points
+	points[0 + a_nSubdivisions] = vector3(0, a_fOuterRadius, a_fHeight);
+
+	//Third Set determines the Inner Bottom layer of points
+	points[0+ a_nSubdivisions*2] = vector3(0, a_fInnerRadius, 0);
+
+	//Third Set determines the Inner Top layer of points
+	points[0 + a_nSubdivisions * 3] = vector3(0, a_fInnerRadius, a_fHeight);
+
+	//Set the previous point to point with origin
+	previousPoint = points[0];
+
+	//Making the Bottom Outer points
+	for (int i = 0; i < a_nSubdivisions - 1; i++)
+	{
+		double x = (cos(PI * 2 / a_nSubdivisions)*previousPoint.x) - sin(PI * 2 / a_nSubdivisions)* previousPoint.y;
+		double y = sin(PI * 2 / a_nSubdivisions)* previousPoint.x + (cos(PI * 2 / a_nSubdivisions)*previousPoint.y);
+		points[i + 1] = vector3(x, y, 0);
+
+		previousPoint = points[i + 1];
+	}
+
+	//Making the Top Outer Points
+	for (int i = a_nSubdivisions; i < a_nSubdivisions * 2 - 1; i++)
+	{
+		points[i + 1] = points[i + 1 - a_nSubdivisions];
+		points[i + 1].z = a_fHeight;
+	}
+
+	//Change the previous point to go to the Bottom Inner Layer
+	previousPoint = points[a_nSubdivisions*2];
+
+	//Making the Bottom Inner points
+	for (int i = a_nSubdivisions*2; i < a_nSubdivisions * 3 - 1; i++)
+	{
+		double x = (cos(PI * 2 / a_nSubdivisions)*previousPoint.x) - sin(PI * 2 / a_nSubdivisions)* previousPoint.y;
+		double y = sin(PI * 2 / a_nSubdivisions)* previousPoint.x + (cos(PI * 2 / a_nSubdivisions)*previousPoint.y);
+		points[i + 1] = vector3(x, y, 0);
+
+		previousPoint = points[i + 1];
+	}
+
+	//Making the Top Inner points
+	for (int i = a_nSubdivisions*3; i < a_nSubdivisions * 4 - 1; i++)
+	{
+		//Getting the Bottom Inner points and setting Top Inner points equal to them in X,Y
+		points[i + 1] = points[i + 1 - a_nSubdivisions*2];
+		points[i + 1].z = a_fHeight;
+	}
+
+	//Making the Bottom Faces
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		if (i + 1 >= a_nSubdivisions)
+		{
+			AddQuad(points[i + a_nSubdivisions * 2], points[0 + a_nSubdivisions*2], points[i + 1], points[0]);
+		}
+		else
+			AddQuad(points[i + a_nSubdivisions*2], points[i + 1 + a_nSubdivisions*2], points[i], points[i + 1]);
+	}
+
+	//Making the Top Faces
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		if (i + 1 > a_nSubdivisions)
+		{
+			AddQuad(points[i + 1 + a_nSubdivisions], points[0 + a_nSubdivisions], points[i + a_nSubdivisions * 3], points[a_nSubdivisions * 3]);
+		}
+		else
+			AddQuad(points[i + a_nSubdivisions], points[i + a_nSubdivisions + 1], points[i + a_nSubdivisions * 3], points[i + 1 + a_nSubdivisions * 3]);
+	}
+
+	//Making the Sides
+	//C--D
+	//|  |
+	//A--B
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		if (i + 1 >= a_nSubdivisions)
+		{
+			AddQuad(points[i], points[1], points[i + a_nSubdivisions], points[1 + a_nSubdivisions]);
+		}
+		else
+			AddQuad(points[i], points[i + 1], points[i + a_nSubdivisions], points[i + 1 + a_nSubdivisions]);
+	}
+
+	//Cleanup
+	delete[] points;
+	points = nullptr;
+
 	// -------------------------------
+
+	// Adding information about color
+	CompleteMesh(a_v3Color);
+	CompileOpenGL3X();
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
