@@ -56,13 +56,26 @@ void Application::Display(void)
 
 	//calculate the current position
 	vector3 v3CurrentPos;
-	
+	static int stopsListIncrement = 0;
+	vector3 start = m_stopsList[stopsListIncrement];
+	vector3 destination = m_stopsList[stopsListIncrement + 1];
 
-
-
+	//MapValue(Value, OriginalMin, OriginalMax, NewMin, NewMax);
+	//std::cout << fTimer << std::endl;
 
 	//your code goes here
-	v3CurrentPos = vector3(0.0f, 0.0f, 0.0f);
+	float fStepTime = 5.0f;
+
+	float percentage = fTimer / fStepTime;
+	v3CurrentPos = glm::lerp(start, destination, percentage);
+
+	if (percentage >= 1.0f)
+	{
+		stopsListIncrement++;
+		fTimer = 0;
+	}
+	if (stopsListIncrement == 10)
+		stopsListIncrement = 0;
 	//-------------------
 	
 
