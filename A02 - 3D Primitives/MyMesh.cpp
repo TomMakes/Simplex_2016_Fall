@@ -526,24 +526,24 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	{
 		if (i + 1 >= a_nSubdivisions)
 		{
-			AddQuad(points[i + a_nSubdivisions * 2], points[0 + a_nSubdivisions*2], points[i + 1], points[0]);
+			AddQuad(points[i + (a_nSubdivisions*2)], points[(a_nSubdivisions*2)], points[i], points[0]);
 		}
 		else
-			AddQuad(points[i + a_nSubdivisions*2], points[i + 1 + a_nSubdivisions*2], points[i], points[i + 1]);
+			AddQuad(points[i + (a_nSubdivisions*2)], points[i + 1 + (a_nSubdivisions*2)], points[i], points[i + 1]);
 	}
 
 	//Making the Top Faces
 	for (int i = 0; i < a_nSubdivisions; i++)
 	{
-		if (i + 1 > a_nSubdivisions)
+		if (i + 1 >= a_nSubdivisions)
 		{
-			AddQuad(points[i + 1 + a_nSubdivisions], points[0 + a_nSubdivisions], points[i + a_nSubdivisions * 3], points[a_nSubdivisions * 3]);
+			AddQuad(points[i + (a_nSubdivisions)], points[(a_nSubdivisions)], points[i + (a_nSubdivisions * 3)], points[0 + (a_nSubdivisions * 3)]);
 		}
 		else
-			AddQuad(points[i + a_nSubdivisions], points[i + a_nSubdivisions + 1], points[i + a_nSubdivisions * 3], points[i + 1 + a_nSubdivisions * 3]);
+			AddQuad(points[i + (a_nSubdivisions)], points[i + 1 + (a_nSubdivisions)], points[i + (a_nSubdivisions * 3)], points[i + 1 + (a_nSubdivisions * 3)]);
 	}
 
-	//Making the Sides
+	//Making the Out Sides
 	//C--D
 	//|  |
 	//A--B
@@ -551,10 +551,21 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	{
 		if (i + 1 >= a_nSubdivisions)
 		{
-			AddQuad(points[i], points[1], points[i + a_nSubdivisions], points[1 + a_nSubdivisions]);
+			AddQuad(points[i], points[0], points[i + a_nSubdivisions], points[0 + a_nSubdivisions]);
 		}
 		else
 			AddQuad(points[i], points[i + 1], points[i + a_nSubdivisions], points[i + 1 + a_nSubdivisions]);
+	}
+
+	//Making the Inner Sides
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		if (i + 1 >= a_nSubdivisions)
+		{
+			AddQuad(points[i + (a_nSubdivisions * 3)], points[0 + (a_nSubdivisions * 3)], points[i + (a_nSubdivisions * 2)], points[(a_nSubdivisions * 2)]);
+		}
+		else
+			AddQuad(points[i + (a_nSubdivisions*3)], points[i + 1 + (a_nSubdivisions*3)], points[i + (a_nSubdivisions * 2)], points[i + 1 + (a_nSubdivisions * 2)]);
 	}
 
 	//Cleanup
