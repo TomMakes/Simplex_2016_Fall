@@ -26,6 +26,7 @@ void Application::InitVariables(void)
 		m_uOrbits = 7;
 
 	float fSize = 1.0f; //initial size of orbits
+	float radius = 0.95f; //Initial will be 0.95 then 0.475+ after for initial value
 
 	//creating a color using the spectrum 
 	uint uColor = 650; //650 is Red
@@ -34,13 +35,25 @@ void Application::InitVariables(void)
 	/*
 		This part will create the orbits, it start at 3 because that is the minimum subdivisions a torus can have
 	*/
+	startList.push_back(vector3(0.95f, 0, 0));
 	uint uSides = 3; //start with the minimal 3 sides
 	for (uint i = uSides; i < m_uOrbits + uSides; i++)
 	{
 		vector3 v3Color = WaveLengthToRGB(uColor); //calculate color based on wavelength
 		m_shapeList.push_back(m_pMeshMngr->GenerateTorus(fSize, fSize - 0.1f, 3, i, v3Color)); //generate a custom torus and add it to the meshmanager
+		startList.push_back(vector3((0.95f + 0.5f*(i - 2)), 0.0f, 0.0f)); //(0.5f*(i - 1))
 		fSize += 0.5f; //increment the size for the next orbit
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
+	}
+	std::cout << m_uOrbits << std::endl;
+
+	//Generate the initial stop points for each sphere
+	for (uint i = 0; i < m_uOrbits; i++)
+	{
+		double x = (cos(PI * 2 / (i + 3))*startList[i].x) - sin(PI * 2 / (i+3))* startList[i].y;
+		double y = sin(PI * 2 / (i + 3))* startList[i].x + (cos(PI * 2 / (i + 3))*startList[i].y);
+
+		stopList.push_back(vector3(x, y, 0));
 	}
 }
 void Application::Update(void)
@@ -59,6 +72,22 @@ void Application::Display(void)
 	// Clear the screen
 	ClearScreen();
 
+	//Get a timer
+	static float fTimer = 0;	//store the new timer
+	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
+	fTimer += m_pSystem->GetDeltaTime(uClock); //get the delta time for that timer
+
+											   //calculate the current position
+	static int stopsListIncrement = 0;
+	vector3 start = startList[stopsListIncrement];
+	vector3 destination = stopList[stopsListIncrement];
+
+	//your code goes here
+	float fStepTime = 5.0f;
+
+	float percentage = fTimer / fStepTime;
+	//v3CurrentPos = glm::lerp(start, destination, percentage);
+
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix(); //view Matrix
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix(); //Projection Matrix
 	matrix4 m4Offset = IDENTITY_M4; //offset of the orbits, starts as the global coordinate system
@@ -73,12 +102,32 @@ void Application::Display(void)
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 90.0f, AXIS_X));
 
 		//calculate the current position
-		vector3 v3CurrentPos = ZERO_V3;
+		vector3 v3CurrentPos = glm::lerp(startList[i], stopList[i], percentage);  //ZERO_V3;
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
 
 		//draw spheres
 		m_pMeshMngr->AddSphereToRenderList(m4Model * glm::scale(vector3(0.1)), C_WHITE);
 	}
+
+	//Once the sphere gets to the end of the line,
+	//This loop will set all the start points to where the spheres are and set the destination(stoplist) to the next point.
+	if (percentage >= 1.0f)
+	{
+		for (uint i = 0; i < m_uOrbits; i++)
+		{
+			startList[i] = stopList[i];
+		}
+		stopList.clear();
+		for (uint i = 0; i < m_uOrbits; i++)
+		{
+			double x = (cos(PI * 2 / (i + 3))*startList[i].x) - sin(PI * 2 / (i + 3))* startList[i].y;
+			double y = sin(PI * 2 / (i + 3))* startList[i].x + (cos(PI * 2 / (i + 3))*startList[i].y);
+
+			stopList.push_back(vector3(x, y, 0));
+		}
+		fTimer = 0;
+	}
+
 
 	//render list call
 	m_uRenderCallCount = m_pMeshMngr->Render();
