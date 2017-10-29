@@ -55,6 +55,8 @@ void Application::InitVariables(void)
 
 		stopList.push_back(vector3(x, y, 0));
 	}
+
+
 }
 void Application::Update(void)
 {
@@ -77,13 +79,8 @@ void Application::Display(void)
 	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
 	fTimer += m_pSystem->GetDeltaTime(uClock); //get the delta time for that timer
 
-											   //calculate the current position
-	static int stopsListIncrement = 0;
-	vector3 start = startList[stopsListIncrement];
-	vector3 destination = stopList[stopsListIncrement];
-
 	//your code goes here
-	float fStepTime = 5.0f;
+	float fStepTime = 2.0f;
 
 	float percentage = fTimer / fStepTime;
 	//v3CurrentPos = glm::lerp(start, destination, percentage);
@@ -126,6 +123,15 @@ void Application::Display(void)
 			stopList.push_back(vector3(x, y, 0));
 		}
 		fTimer = 0;
+	}
+
+	//Create a Line Between each Sphere
+	for (uint i = 0; i < m_uOrbits / 2; i++)
+	{
+		if (m_uOrbits > 2)
+		{
+			m_pMeshMngr->AddLineToRenderList(m4Projection, glm::lerp(startList[i], stopList[i], percentage), glm::lerp(startList[i + 1], stopList[i + 1], percentage), WaveLengthToRGB(startList[i].x), WaveLengthToRGB(startList[i].x));
+		}
 	}
 
 

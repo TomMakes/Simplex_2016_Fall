@@ -28,6 +28,8 @@ void Application::InitVariables(void)
 
 	//projection used
 	m_uProjection = 1;
+
+
 }
 void Application::Update(void)
 {
@@ -48,30 +50,64 @@ void Application::Display(void)
 	//draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 
+
 	//calculate view and projection
 	switch (m_uProjection)
 	{
 	default:
 	case 1:
 		m_pCamera->ResetCamera();
+
+		/*vector3 v3LookingAt = m_v3CameraPosition;
+		float fRatio = static_cast<float>(m_pSystem->GetWindowWidth()) / static_cast<float>(m_pSystem->GetWindowHeight());
+		//matrix4 m4Projection = glm::perspective(45.0f, (m_pSystem->GetWindowRatio()), 0.01f, 1000.0f);//m_pCameraMngr->GetProjectionMatrix();
+		matrix4 m4Projection = glm::ortho(-10.0f, 10.0f, -30.0f, 30.0f, 0.01f, 1000.0f);
+
+
+		matrix4 m4View = glm::lookAt(vector3(0, 0, 30) + m_v3CameraPosition, //Location
+			vector3(0, 0, 0) + v3LookingAt, //what are you looking at
+			AXIS_Y);//What is the Up direction of my camera
+			*/
+
+
 		break;
 	case 2:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPerspective(false);
 		break;
 	case 3:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetPosition(vector3(30.0f, 0.1f, 0.1f));
+		m_pCamera->SetUp(vector3(0.0f, 0.0f, -1.0f));
+
 		break;
 	case 4:
 		m_pCamera->ResetCamera();
+		//m_pCamera->SetPerspective(false);
+		m_pCamera->SetPosition(vector3(0.0f, 0.0f, -15.0f));
+		m_pCamera->SetUp(vector3(0.0f, 1.0f, 0.0f));
+
 		break;
 	case 5:
 		m_pCamera->ResetCamera();
+		//m_pCamera->SetPerspective(false);
+		m_pCamera->SetPosition(vector3(0.0f, 0.0f, -15.0f));
+		m_pCamera->SetUp(vector3(0.0f, 1.0f, 0.0f));
+		m_pCamera->SetNearFar(vector2(5.0f, 1000.0f));
+
 		break;
 	case 6:
 		m_pCamera->ResetCamera();
+		//m_pCamera->SetPerspective(false);
+		m_pCamera->SetPosition(vector3(0.0f, 0.0f, -15.0f));
+		m_pCamera->SetUp(vector3(0.0f, 1.0f, 0.0f));
+		m_pCamera->SetNearFar(vector2(0.01f, 10.0f));
+
 		break;
 	case 7:
 		m_pCamera->ResetCamera();
+		m_pCamera->SetUp(vector3(0.0f, -1.0f, 0.0f));
+
 		break;
 	}
 
