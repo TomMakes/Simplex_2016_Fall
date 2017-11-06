@@ -16,6 +16,19 @@ namespace Simplex
 
 class Application
 {
+	float mouseSensitivity = 0.005f; //How fast can the mouse move the camera
+	glm::quat myQuat; //Quarternion for rotations
+	float xPos; //X Position for camera
+	float yPos; //Y position for camera
+	float zPos; //Z position for camera
+	vector3 cameraPosition; //The position for camera in a vector
+	vector3 targetDirection; //Where the camera is looking
+	vector3 camUpDirection; //What is Up for the camera
+	vector3 rotation; //The rotation resulting from quarternion
+	vector3 previousRotation = vector3(0,0,0); //The pervious rotation results, in order to get change
+	bool wDown, sDown, aDown, dDown = false;
+	float m_fSpeed = 0.05f; //Foward movement speed
+	float m_sSpeed = 0.05f; //Side movement speed
 	MyCamera* m_pCamera = nullptr; //Camera class
 	MyMeshManager* m_pMyMeshMngr = nullptr; //My Mesh Manager
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //Programmer

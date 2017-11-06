@@ -108,7 +108,7 @@ Simplex::MyCamera::~MyCamera(void)
 void Simplex::MyCamera::ResetCamera(void)
 {
 	m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
-	m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
+	m_v3Target = vector3(0.0f, 0.0f, -1.0f); //What I'm looking at
 	m_v3Up = vector3(0.0f, 1.0f, 0.0f); //What is up
 
 	m_bPerspective = true; //perspective view? False is Orthographic
@@ -120,6 +120,7 @@ void Simplex::MyCamera::ResetCamera(void)
 
 	m_v2Horizontal = vector2(-5.0f, 5.0f); //Ortographic horizontal projection
 	m_v2Vertical = vector2(-5.0f, 5.0f); //Ortographic vertical projection
+
 
 	CalculateProjectionMatrix();
 	CalculateViewMatrix();
@@ -136,7 +137,8 @@ void Simplex::MyCamera::SetPositionTargetAndUp(vector3 a_v3Position, vector3 a_v
 void Simplex::MyCamera::CalculateViewMatrix(void)
 {
 	//Calculate the look at
-	m_m4View = glm::lookAt(m_v3Position, m_v3Target, m_v3Up);
+	//m_m4View = glm::lookAt(m_v3Position, m_v3Target, m_v3Up);
+	m_m4View = glm::lookAt(m_v3Position, m_v3Position + m_v3Target, m_v3Up);
 }
 
 void Simplex::MyCamera::CalculateProjectionMatrix(void)

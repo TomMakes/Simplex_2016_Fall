@@ -70,6 +70,22 @@ void Application::ProcessKeyPressed(sf::Event a_event)
 	switch (a_event.key.code)
 	{
 	default: break;
+	case sf::Keyboard::W:
+		//cameraPosition += m_fSpeed * targetDirection;
+		wDown = true;
+		break;
+	case sf::Keyboard::S:
+		//cameraPosition -= m_fSpeed * targetDirection;
+		sDown = true;
+		break;
+	case sf::Keyboard::A:
+		//cameraPosition -= glm::normalize(glm::cross(targetDirection, camUpDirection)) * m_fSpeed;
+		aDown = true;
+		break;
+	case sf::Keyboard::D:
+		//cameraPosition += glm::normalize(glm::cross(targetDirection, camUpDirection)) * m_fSpeed;
+		dDown = true;
+		break;
 	case sf::Keyboard::Space:
 		break;
 	}
@@ -85,6 +101,22 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 	switch (a_event.key.code)
 	{
 	default: break;
+	case sf::Keyboard::W:
+		//cameraPosition += m_fSpeed * targetDirection;
+		wDown = false;
+		break;
+	case sf::Keyboard::S:
+		//cameraPosition -= m_fSpeed * targetDirection;
+		sDown = false;
+		break;
+	case sf::Keyboard::A:
+		//cameraPosition -= glm::normalize(glm::cross(targetDirection, camUpDirection)) * m_fSpeed;
+		aDown = false;
+		break;
+	case sf::Keyboard::D:
+		//cameraPosition += glm::normalize(glm::cross(targetDirection, camUpDirection)) * m_fSpeed;
+		dDown = false;
+		break;
 	case sf::Keyboard::Escape:
 		m_bRunning = false;
 		break;
