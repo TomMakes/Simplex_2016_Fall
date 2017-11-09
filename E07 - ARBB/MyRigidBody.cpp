@@ -85,12 +85,47 @@ void MyRigidBody::SetModelMatrix(matrix4 a_m4ModelMatrix)
 	m_m4ToWorld = a_m4ModelMatrix;
 	
 	//your code goes here---------------------
-	m_v3MinG = m_v3MinL;
-	m_v3MaxG = m_v3MaxL;
+	//Get the 8 corners
+	vector3 corners[8];
+
+	corners[0] = m_v3MinL;
+	corners[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
+	corners[2] = vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z);
+	corners[3] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MinL.z);
+	corners[4] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
+	corners[5] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z);
+	corners[6] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z);
+	corners[7] = m_v3MaxL;
+	//Convert the list from local to global coordinates.
+	for (uint i = 0; i < 8; ++i)
+	{
+		corners[i] = vector3(m_m4ToWorld * vector4(corners[i], 1));
+	}
+
+	//Set the comparison
+	m_v3MaxG = m_v3MinG = corners[0];
+
+	//Get the max and min out of the list
+	for (uint i = 1; i < 8; ++i)
+	{
+		if (m_v3MaxG.x < corners[i].x) m_v3MaxG.x = corners[i].x;
+		else if (m_v3MinG.x > corners[i].x) m_v3MinG.x = corners[i].x;
+
+		if (m_v3MaxG.y < corners[i].y) m_v3MaxG.y = corners[i].y;
+		else if (m_v3MinG.y > corners[i].y) m_v3MinG.y = corners[i].y;
+
+		if (m_v3MaxG.z < corners[i].z) m_v3MaxG.z = corners[i].z;
+		else if (m_v3MinG.z > corners[i].z) m_v3MinG.z = corners[i].z;
+	}
+
+	//m_v3MinG = vector3(m_m4ToWorld * vector4(m_v3MinL,1));
+	//m_v3MaxG = vector3(m_m4ToWorld * vector4(m_v3MaxL, 1));
+	//m_v3MinG = m_v3MinL;
+	//m_v3MaxG = m_v3MaxL;
 	//----------------------------------------
 
 	//we calculate the distance between min and max vectors
-	m_v3ARBBSize = m_v3MaxG - m_v3MinG;
+	m_v3ARBBSize = (m_v3MaxG - m_v3MinG);
 }
 //The big 3
 MyRigidBody::MyRigidBody(std::vector<vector3> a_pointList)
@@ -98,6 +133,7 @@ MyRigidBody::MyRigidBody(std::vector<vector3> a_pointList)
 	Init();
 	//Count the points of the incoming list
 	uint uVertexCount = a_pointList.size();
+	m_pointList = a_pointList;
 
 	//If there are none just return, we have no information to create the BS from
 	if (uVertexCount == 0)

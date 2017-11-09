@@ -138,7 +138,7 @@ void Simplex::MyCamera::CalculateViewMatrix(void)
 {
 	//Calculate the look at
 	//m_m4View = glm::lookAt(m_v3Position, m_v3Target, m_v3Up);
-	m_m4View = glm::lookAt(m_v3Position, m_v3Position + m_v3Target, m_v3Up);
+	m_m4View = glm::lookAt(m_v3Position, m_v3Target, AXIS_Y);
 }
 
 void Simplex::MyCamera::CalculateProjectionMatrix(void)

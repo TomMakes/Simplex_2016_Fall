@@ -40,20 +40,20 @@ void Application::Update(void)
 	if (wDown == true)
 	{
 		//Move position fowards in the direction it is facing
-		cameraPosition += m_fSpeed * targetDirection;
+		cameraPosition += m_fSpeed * (vector3(0.0f,0.0f,1.0f) * myQuat);
 	}
 	if (sDown == true)
 	{
-		cameraPosition -= m_fSpeed * targetDirection;
+		cameraPosition -= m_fSpeed * (vector3(0.0f, 0.0f, 1.0f) * myQuat);
 	}
 	if (aDown == true)
 	{
 		//Move the camera position sideways, for some reason this also rotates
-		cameraPosition -= glm::normalize(glm::cross(targetDirection, camUpDirection)) * m_fSpeed;
+		cameraPosition -= (vector3(1.0f, 0.0f, 0.0f) * myQuat) * m_fSpeed;
 	}
 	if (dDown == true)
 	{
-		cameraPosition += glm::normalize(glm::cross(targetDirection, camUpDirection)) * m_fSpeed;
+		cameraPosition += (vector3(1.0f, 0.0f, 0.0f) * myQuat) * m_fSpeed;//glm::normalize(glm::cross(targetDirection, camUpDirection)) * m_fSpeed;
 	}
 
 	//xPos = 0 + m_sSpeed; //Controlled by D and A
@@ -63,26 +63,29 @@ void Application::Update(void)
 	//Check if user is holding right click
 	if (m_bFPC == true)
 	{
-		rotation.x = m_v3Mouse.x * (PI / 180);//(m_v3Mouse.x - previousRotation.x) * (PI/180);  //* mouseSensitivity;
-		rotation.y = m_v3Mouse.y * (PI / 180);//(m_v3Mouse.y - previousRotation.y) * (PI/180);  //* mouseSensitivity;
-		if (previousRotation.x != 0.0f)
+		rotation.x +=(m_v3Mouse.x - previousRotation.x) * (PI/180)  * mouseSensitivity;  //m_v3Mouse.x* (PI / 180);
+		rotation.y +=(m_v3Mouse.y - previousRotation.y) * (PI/180)  * mouseSensitivity; // m_v3Mouse.y* (PI / 180);
+		if (previousRotation.x != rotation.x)
 		{
-			myQuat = glm::quat(vector3(rotation.x, rotation.y, 0.0f));
-			rotation = glm::conjugate(myQuat) * rotation *  myQuat;
+			myQuat = glm::quat(rotation);
+			//glm::quat myQuat2 = glm::quat(rotation.y, vector3(0, 1, 0));
+
+
+			rotation = vector3(0.0f, 0.0f, 1.0f) *  (myQuat);
 			std::cout << rotation.x << "x\n";
 			std::cout << rotation.y << "y\n";
 		}
 	}
 
 	previousRotation = vector3(m_v3Mouse.x, m_v3Mouse.y, 0.0f);
-	targetDirection = glm::normalize(rotation);
+	targetDirection =  cameraPosition + glm::normalize(rotation);
 
 	//xPos += 0.01f;
 	//Make it so you can move around the scene
 	m_pCamera->SetPositionTargetAndUp(
 		cameraPosition, //Where my eyes are
-		(targetDirection), //where what I'm looking at is
-		AXIS_Y);					//what is up
+		targetDirection, //where what I'm looking at is
+		((vector3(0.0f, 1.0f, 0.0f) * myQuat) - cameraPosition));					//what is up
 
 	//Is the first person camera active?
 	//CameraRotation();

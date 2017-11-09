@@ -15,6 +15,8 @@ class MyRigidBody
 {
 	MeshManager* m_pMeshMngr = nullptr; //for displaying the Rigid Body
 
+	std::vector<vector3> m_pointList;
+
 	bool m_bVisibleBS = false; //Visibility of bounding sphere
 	bool m_bVisibleOBB = true; //Visibility of Oriented bounding box
 	bool m_bVisibleARBB = true; //Visibility of axis (Re)aligned bounding box
