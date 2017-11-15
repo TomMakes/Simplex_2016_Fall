@@ -36,9 +36,14 @@ void Application::Update(void)
 
 	//Is the first person camera active?
 	CameraRotation();
-
+	static float increase = 0;
+	//increase += .1f;
+	if (increase >= 1)
+	{
+		increase += .01;
+	}
 	//Set model matrix to the creeper
-	matrix4 mCreeper = glm::translate(m_v3Creeper) * ToMatrix4(m_qCreeper) * ToMatrix4(m_qArcBall);
+	matrix4 mCreeper = glm::translate(m_v3Creeper + vector3(1.5,0.0f,0.0f)) * ToMatrix4(m_qCreeper) * ToMatrix4(m_qArcBall);
 	m_pCreeper->SetModelMatrix(mCreeper);
 	m_pCreeperRB->SetModelMatrix(mCreeper);
 	m_pMeshMngr->AddAxisToRenderList(mCreeper);

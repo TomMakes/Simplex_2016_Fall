@@ -286,7 +286,102 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	Simplex that might help you [eSATResults] feel free to use it.
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
+	
+	//Create the axis' in which you are testing for SAT
+	vector3 axis[15];
+	//populate first the basic directions using the points, use local coordinates first
+	//Get X axis First square
+	axis[0] = glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z));
+	//Get Y axis First square
+	axis[1] = glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z));
+	//Get Z axis First square
+	axis[2] = glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z));
+
+	//Calculate same items for the Second Square in same order.
+	vector3 otherMaxL = a_pOther->GetMaxLocal();
+	vector3 otherMinL = a_pOther->GetMinLocal();
+	axis[3] = glm::cross(vector3(otherMaxL), vector3(otherMinL.x, otherMaxL.y, otherMaxL.z));
+	axis[4] = glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMinL.y, otherMaxL.z));
+	axis[5] = glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMaxL.y, otherMinL.z));
+
+	//Counter to hold where to store the cross products
+	int counter = 6;
+	//For Loop calculates the cross products between each of the axis'
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 3; j < 6; j++)
+		{
+			//axis[counter] = glm::cross(glm::abs(axis[i]), glm::abs(axis[j]));
+			axis[counter] = glm::cross(axis[i], axis[j]);
+			counter++;
+		}
+	}
+	//Convert each axis from local to global
+	for(int i = 0; i < 15; i++)
+	{
+		//turn into a unit vector
+		axis[i] = glm::normalize(axis[i]);
+		axis[i] = vector3(m_m4ToWorld * vector4(axis[i], 1.0f));
+	}
+
+	//Get the corners for each shape
+	vector3 shape1[4] = {
+		vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z),
+		vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z),
+		vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z),
+		vector3(m_v3MinL.x, m_v3MinL.y, m_v3MinL.z) };
+	vector3 shape2[4] = {
+		vector3(otherMaxL.x, otherMaxL.y, otherMaxL.z),
+		vector3(otherMaxL.x, otherMaxL.y, otherMinL.z),
+		vector3(otherMaxL.x, otherMinL.y, otherMinL.z),
+		vector3(otherMinL.x, otherMinL.y, otherMinL.z) };
+
+	//Convert each corner to global coordinates
+	for(int i = 0; i < 4; i++)
+	{
+		shape1[i] = vector3(m_m4ToWorld * vector4(shape1[i], 0.0f));
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		shape2[i] = vector3(m_m4ToWorld * vector4(shape2[i], 0.0f));
+	}
+
+	//Time to test each axis!!
+	for(int i = 0; i < 15; i++)
+	{
+		int sh1MaxVal = glm::dot(axis[i], shape1[0]);
+		int sh1MinVal = glm::dot(axis[i], shape1[0]);
+		int sh2MaxVal = glm::dot(axis[i], shape2[0]);
+		int sh2MinVal = glm::dot(axis[i], shape2[0]);
+		for each(vector3 vec in shape1)
+		{
+			int test = glm::dot(axis[i], vec);
+			if (test < sh1MinVal)
+			{
+				sh1MinVal = test;
+			}
+			if (test > sh1MaxVal)
+			{
+				sh1MaxVal = test;
+			}
+		}
+		//Project Each point onto the axis and get min and max values
+		for each(vector3 vec in shape2)
+		{
+			int test = glm::dot(axis[i], vec);
+			if (test < sh2MinVal)
+			{
+				sh2MinVal = test;
+			}
+			if (test > sh2MaxVal)
+			{
+				sh2MaxVal = test;
+			}
+		}
+		if (sh1MinVal > sh2MaxVal || sh2MinVal > sh1MaxVal)
+			return eSATResults::SAT_NONE;
+	}
 
 	//there is no axis test that separates this two objects
-	return eSATResults::SAT_NONE;
+	return 1;
 }
