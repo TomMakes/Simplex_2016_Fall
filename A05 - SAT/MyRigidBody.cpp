@@ -286,9 +286,14 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	Simplex that might help you [eSATResults] feel free to use it.
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
-	
+
+	/*
 	//Create the axis' in which you are testing for SAT
+	vector4 xAxis(1, 0, 0, 0);
+	vector4 yAxis(0, 1, 0, 0);
+	vector4 zAxis(0, 0, 1, 0);
 	vector3 axis[15];
+	
 	//populate first the basic directions using the points, use local coordinates first
 	//Get X axis First square
 	axis[0] = glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z));
@@ -296,13 +301,21 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	axis[1] = glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z));
 	//Get Z axis First square
 	axis[2] = glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z));
+	
+	axis[0] = vector3(m_m4ToWorld * xAxis);
+	axis[1] = vector3(m_m4ToWorld * yAxis);
+	axis[2] = vector3(m_m4ToWorld * zAxis);
+
+	axis[3] = vector3(a_pOther->GetModelMatrix() * xAxis);
+	axis[4] = vector3(a_pOther->GetModelMatrix() * yAxis);
+	axis[5] = vector3(a_pOther->GetModelMatrix() * zAxis);
 
 	//Calculate same items for the Second Square in same order.
 	vector3 otherMaxL = a_pOther->GetMaxLocal();
 	vector3 otherMinL = a_pOther->GetMinLocal();
-	axis[3] = glm::cross(vector3(otherMaxL), vector3(otherMinL.x, otherMaxL.y, otherMaxL.z));
-	axis[4] = glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMinL.y, otherMaxL.z));
-	axis[5] = glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMaxL.y, otherMinL.z));
+	//axis[3] = glm::cross(vector3(otherMaxL), vector3(otherMinL.x, otherMaxL.y, otherMaxL.z));
+	//axis[4] = glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMinL.y, otherMaxL.z));
+	//axis[5] = glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMaxL.y, otherMinL.z));
 
 	//Counter to hold where to store the cross products
 	int counter = 6;
@@ -316,13 +329,14 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 			counter++;
 		}
 	}
+	
 	//Convert each axis from local to global
 	for(int i = 0; i < 15; i++)
 	{
 		//turn into a unit vector
 		axis[i] = glm::normalize(axis[i]);
 		axis[i] = vector3(m_m4ToWorld * vector4(axis[i], 1.0f));
-	}
+	} 
 
 	//Get the corners for each shape
 	vector3 shape1[4] = {
@@ -380,8 +394,146 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 		}
 		if (sh1MinVal > sh2MaxVal || sh2MinVal > sh1MaxVal)
 			return eSATResults::SAT_NONE;
+	} */
+
+	
+	vector4 xAxis(1, 0, 0, 0);
+	vector4 yAxis(0, 1, 0, 0);
+	vector4 zAxis(0, 0, 1, 0);
+
+	vector3 sh1axis[3];
+	sh1axis[0] = vector3(m_m4ToWorld * xAxis);
+	sh1axis[1] = vector3(m_m4ToWorld * yAxis);
+	sh1axis[2] = vector3(m_m4ToWorld * zAxis);
+
+	vector3 sh2axis[3];
+	sh2axis[0] = vector3(a_pOther->GetModelMatrix() * xAxis);
+	sh2axis[1] = vector3(a_pOther->GetModelMatrix() * yAxis);
+	sh2axis[2] = vector3(a_pOther->GetModelMatrix() * zAxis);
+	
+
+	////Counter to hold where to store the cross products
+	//int counter = 6;
+	////For Loop calculates the cross products between each of the axis'
+	//for (int i = 0; i < 3; i++)
+	//{
+	//	for (int j = 3; j < 6; j++)
+	//	{
+	//		//axis[counter] = glm::cross(glm::abs(axis[i]), glm::abs(axis[j]));
+	//		axis[counter] = glm::cross(axis[i], axis[j]);
+	//		counter++;
+	//	}
+	//}
+	////Convert each axis from local to global
+	//for(int i = 0; i < 15; i++)
+	//{
+	//	//turn into a unit vector
+	//	axis[i] = glm::normalize(axis[i]);
+	//	axis[i] = vector3(m_m4ToWorld * vector4(axis[i], 1.0f));
+	//}
+
+	//Get the centerpoints of each BB
+	vector3 sh1Center = GetCenterGlobal();
+	vector3 sh2Center = a_pOther->GetCenterGlobal();
+
+	vector3 sh1Half = GetHalfWidth();
+	vector3 sh2Half = a_pOther->GetHalfWidth();
+
+	//vector3 sh1axis[3] = {
+	//	glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z)),
+	//	glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z)),
+	//	glm::cross(vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MaxL.z), vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z)) };
+	//vector3 sh2axis[3] = {
+	//	glm::cross(vector3(otherMaxL), vector3(otherMinL.x, otherMaxL.y, otherMaxL.z)),
+	//	glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMinL.y, otherMaxL.z)),
+	//	glm::cross(vector3(otherMaxL), vector3(otherMaxL.x, otherMaxL.y, otherMinL.z)) };
+
+	float ra, rb;
+	//Creating rotation matricies
+	glm::mat3x3 R, AbsR;
+
+	//Computing rotation matrix
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			R[i][j] = glm::dot(sh1axis[i], sh2axis[j]);
+		}
 	}
 
+	// Compute translation vector t
+	vector3 t = sh2Center - sh1Center;
+
+	// Bring translation into a’s coordinate frame
+	t = vector3(glm::dot(t, sh1axis[0]), glm::dot(t, sh1axis[1]), glm::dot(t, sh1axis[2])); //vector3(m_m4ToWorld * vector4(t, 1.0f)); 
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			AbsR[i][j] = glm::abs(R[i][j]) + FLT_EPSILON;
+		}
+	}
+
+	for (int i = 0; i < 3; i++) {
+		ra = sh1Half[i];
+		rb = sh2Half[0] * AbsR[i][0] + sh2Half[1] * AbsR[i][1] + sh2Half[2] * AbsR[i][2];
+		if (glm::abs(t[i]) > ra + rb) 
+			return 0;
+	}
+
+	for (int i = 0; i<3; i++) {
+		ra = sh1Half[0] * AbsR[0][i] + sh1Half[1] * AbsR[1][i] + sh1Half[2] * AbsR[2][i];
+		rb = sh2Half[i];
+		if (glm::abs(t[0] * R[0][i] + t[1] * R[1][i] + t[2] * R[2][i]) > ra + rb) 
+			return 0;
+	}
+
+	ra = sh1Half[1] * AbsR[2][0] + sh1Half[2] * AbsR[1][0];
+	rb = sh2Half[1] * AbsR[0][2] + sh2Half[2] * AbsR[0][1];
+	if (glm::abs(t[2] * R[1][0] - t[1] * R[2][0]) > ra + rb) 
+		return 0;
+
+	ra = sh1Half[1] * AbsR[2][1] + sh1Half[2] * AbsR[1][1];
+	rb = sh2Half[0] * AbsR[0][2] + sh2Half[2] * AbsR[0][0];
+	if (glm::abs(t[2] * R[1][1] - t[1] * R[2][1]) > ra + rb) 
+		return 0;
+
+	ra = sh1Half[1] * AbsR[2][2] + sh1Half[2] * AbsR[1][2];
+	rb = sh2Half[0] * AbsR[0][1] + sh2Half[1] * AbsR[0][0];
+	if (glm::abs(t[2] * R[1][2] - t[1] * R[2][2]) > ra + rb) 
+		return 0;
+
+	ra = sh1Half[0] * AbsR[2][0] + sh1Half[2] * AbsR[0][0];
+	rb = sh2Half[1] * AbsR[1][2] + sh2Half[2] * AbsR[1][1];
+	if (glm::abs(t[0] * R[2][0] - t[2] * R[0][0]) > ra + rb) 
+		return 0;
+
+	ra = sh1Half[0] * AbsR[2][1] + sh1Half[2] * AbsR[0][1];
+	rb = sh2Half[0] * AbsR[1][2] + sh2Half[2] * AbsR[1][0];
+	if (glm::abs(t[0] * R[2][1] - t[2] * R[0][1]) > ra + rb)
+		return 0;
+
+	ra = sh1Half[0] * AbsR[2][2] + sh1Half[2] * AbsR[0][2];
+	rb = sh2Half[0] * AbsR[1][1] + sh2Half[1] * AbsR[1][0];
+	if (glm::abs(t[0] * R[2][2] - t[2] * R[0][2]) > ra + rb) 
+		return 0;
+
+	ra = sh1Half[0] * AbsR[1][0] + sh1Half[1] * AbsR[0][0];
+	rb = sh2Half[1] * AbsR[2][2] + sh2Half[2] * AbsR[2][1];
+	if (glm::abs(t[1] * R[0][0] - t[0] * R[1][0]) > ra + rb) 
+		return 0;
+
+	ra = sh1Half[0] * AbsR[1][1] + sh1Half[1] * AbsR[0][1];
+	rb = sh2Half[0] * AbsR[2][2] + sh2Half[2] * AbsR[2][0];
+	if (glm::abs(t[1] * R[0][1] - t[0] * R[1][1]) > ra + rb) 
+		return 0;
+
+	ra = sh1Half[0] * AbsR[1][2] + sh1Half[1] * AbsR[0][2];
+	rb = sh2Half[0] * AbsR[2][1] + sh2Half[1] * AbsR[2][0];
+	if (glm::abs(t[1] * R[0][2] - t[0] * R[1][2]) > ra + rb) 
+		return 0;
+		
 	//there is no axis test that separates this two objects
 	return 1;
 }
