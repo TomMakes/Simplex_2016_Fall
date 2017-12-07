@@ -96,7 +96,10 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		m_bRunning = false;
 		break;
 	case sf::Keyboard::F1:
+	{		
 		m_pCameraMngr->SetCameraMode(CAM_PERSP);
+		std::cout << "This F1 shit was pressed";
+	}
 		break;
 	case sf::Keyboard::F2:
 		m_pCameraMngr->SetCameraMode(CAM_ORTHO_Z);
@@ -113,40 +116,74 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		break;
 	case sf::Keyboard::PageUp:
 		++m_uOctantID;
-		/*
+		
 		if (m_uOctantID >= m_pRoot->GetOctantCount())
 			m_uOctantID = - 1;
-		*/
+		
 		break;
 	case sf::Keyboard::PageDown:
 		--m_uOctantID;
-		/*
+		
 		if (m_uOctantID >= m_pRoot->GetOctantCount())
 			m_uOctantID = - 1;
-		*/
+		
 		break;
 	case sf::Keyboard::Add:
+	{
+		std::cout << "This adding shit was pressed";
 		if (m_uOctantLevels < 4)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			++m_uOctantLevels;
-			/*
+
 			SafeDelete(m_pRoot);
 			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+
 		}
+	}
 		break;
 	case sf::Keyboard::Subtract:
+	{
+		std::cout << "This subtracting shit was pressed";
 		if (m_uOctantLevels > 0)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			--m_uOctantLevels;
-			/*
+
 			SafeDelete(m_pRoot);
 			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+
 		}
+	}
 		break;
+	case sf::Keyboard::P:
+	{
+		std::cout << "This subtracting shit was pressed";
+		if (m_uOctantLevels > 0)
+		{
+			m_pEntityMngr->ClearDimensionSetAll();
+			--m_uOctantLevels;
+
+			SafeDelete(m_pRoot);
+			m_pRoot = new MyOctant(m_uOctantLevels, 5);
+
+		}
+	}
+	break;
+	case sf::Keyboard::O:
+	{
+		std::cout << "This adding shit was pressed";
+		if (m_uOctantLevels < 4)
+		{
+			m_pEntityMngr->ClearDimensionSetAll();
+			++m_uOctantLevels;
+
+			SafeDelete(m_pRoot);
+			m_pRoot = new MyOctant(m_uOctantLevels, 5);
+
+		}
+	}
+	break;
 	case sf::Keyboard::LShift:
 	case sf::Keyboard::RShift:
 		m_bModifier = false;

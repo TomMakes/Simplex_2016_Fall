@@ -30,6 +30,8 @@ void Application::InitVariables(void)
 		}
 	}
 	m_uOctantLevels = 1;
+	m_pRoot = new MyOctant(m_uOctantLevels, 5);
+	//What I want the levels to be, and ideal count of objects within each octant
 	m_pEntityMngr->Update();
 }
 void Application::Update(void)
@@ -55,7 +57,7 @@ void Application::Display(void)
 	ClearScreen();
 
 	//display octree
-	//m_pRoot->Display();
+	m_pRoot->Display();
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
@@ -68,12 +70,19 @@ void Application::Display(void)
 	
 	//draw gui,
 	DrawGUI();
+
+	//Display Octree
+	if (m_uOctantID == -1)
+		m_pRoot->Display();
+	else
+		m_pRoot->Display(m_uOctantID);
 	
 	//end the current frame (internally swaps the front and back buffers)
 	m_pWindow->display();
 }
 void Application::Release(void)
 {
+	//SafeDelete(m_pRoot);
 	//release GUI
 	ShutdownGUI();
 }
